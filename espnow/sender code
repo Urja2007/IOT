@@ -1,0 +1,58 @@
+#include <esp_now.h>   // ESP-NOW communication library
+#include <WiFi.h>      // Wi-Fi library (needed for STA mode)
+
+// MAC address of the receiver ESP32 (replace with the actual one)
+uint8_t receiverMAC[] = {0x8C,0x4F,0x00,0x2C,0x3A,0xCC};
+
+// Callback function executed after data is sent
+void OnDataSent(const esp_now_send_info_t *info, esp_now_send_status_t status) {
+  Serial.print("Last Packet Send Status: ");
+  // Print whether the data was delivered successfully or failed
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+}
+
+void setup() {
+  Serial.begin(115200);   // Start serial communication for debugging
+
+  // Set ESP32 in Station mode (required for ESP-NOW)
+  WiFi.mode(WIFI_STA);
+
+  // Initialize ESP-NOW
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
+    return;   // Stop setup if ESP-NOW fails
+  }
+
+  // Register the callback function for send events
+  esp_now_register_send_cb(OnDataSent);
+
+  // Define peer information (the receiver ESP32)
+  esp_now_peer_info_t peerInfo = {};
+  memcpy(peerInfo.peer_addr, receiverMAC, 6);  // Copy receiver MAC address
+  peerInfo.channel = 0;     // Use default channel (0 means current Wi-Fi channel)
+  peerInfo.encrypt = false; // No encryption
+
+  // Add the peer to the ESP-NOW peer list
+  if (esp_now_add_peer(&peerInfo) != ESP_OK) {
+    Serial.println("Failed to add peer");
+    return;   // Exit setup if peer registration fails
+  }
+}
+
+void loop() {
+  // Message to send
+  const char *message = "Hello World";
+
+  // Send data to the receiver using ESP-NOW
+  // Arguments: peer MAC, data pointer, length of data
+  esp_err_t result = esp_now_send(receiverMAC, (uint8_t *)message, strlen(message) + 1);
+
+  // Check send result
+  if (result == ESP_OK) {
+    Serial.println("Sent successfully");
+  } else {
+    Serial.println("Error sending the data");
+  }
+
+  delay(2000); // Wait 2 seconds before sending next message
+}
