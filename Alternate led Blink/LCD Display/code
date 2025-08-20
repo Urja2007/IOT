@@ -1,0 +1,67 @@
+#include <avr/io.h>        // AVR I/O register definitions
+#include <stdio.h>         // Standard I/O (for functions like printf if needed)
+#include <util/delay.h>    // Delay functions (_delay_ms, _delay_us)
+#define F_CPU 16000000UL   // Define clock frequency as 16 MHz for delay calculations
+
+void command(unsigned char cmd)
+{
+	PORTC = 0x02;      // RS = 0 (command mode), EN = 1 (Enable High)
+	PORTD = cmd;       // Put command byte on data pins
+	PORTC = 0x00;      // RS = 0, EN = 0 (Latch command into LCD)
+	_delay_ms(15);     // Wait for LCD to process the command
+}
+
+void lcd_data(unsigned char data)
+{
+	PORTC = 0x03;      // RS = 1 (data mode), EN = 1 (Enable High)
+	PORTD = data;      // Put data byte on data pins
+	PORTC = 0x01;      // RS = 1, EN = 0 (Latch data into LCD)
+	_delay_ms(15);     // Wait for LCD to process the data
+}
+
+void lcd_print(char *p)
+{
+	while (*p)         // Loop until null character ('\0')
+	{
+		lcd_data(*p++); // Send each character to LCD
+	}
+}
+
+/* -------------------- MAIN FUNCTION -------------------- */
+int main(void)
+{
+	// Configure PORTC as output for control signals (RS, EN)
+	DDRC = 0xFF;
+
+	// Configure PORTD as output for LCD data lines (8-bit mode)
+	DDRD = 0xFF;
+
+	/* ----------- LCD Initialization Commands ----------- */
+	command(0x38); // Function set: 8-bit mode, 2-line display, 5x8 font
+	command(0x0F); // Display ON, cursor ON, blinking cursor
+	command(0x01); // Clear display
+	_delay_ms(2);  // Wait for clear to complete
+
+	while (1) // Infinite loop
+	{
+		command(0x80);
+		lcd_print("Hello World");
+		_delay_ms(1000);
+		command(0x01);
+		
+		command(0x80);    // Move cursor to first row, first column
+		lcd_print("Urja"); // Print first line
+		_delay_ms(1000);        // Delay 1 second
+
+		command(0xC0);         // Move cursor to second row, first column
+		lcd_print("Makernova 3.O"); // Print second line
+		_delay_ms(1000);                // Delay 1 second
+
+		command(0x01);      // Clear display for next cycle
+		_delay_ms(1000);
+	}
+}
+
+
+
+
