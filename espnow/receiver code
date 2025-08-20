@@ -1,0 +1,29 @@
+#include <esp_now.h>   // ESP-NOW communication library
+#include <WiFi.h>      // WiFi library (needed for setting ESP32 Wi-Fi mode)
+
+// Callback function that gets executed whenever data is received via ESP-NOW
+void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len) {
+  Serial.print("Received message: ");
+  Serial.println((char *)incomingData);   // Print incoming data as a string
+}
+
+void setup() {
+  Serial.begin(115200);   // Start serial communication for debugging at 115200 baud
+
+  // Set ESP32 in Station mode (mandatory for ESP-NOW to work)
+  WiFi.mode(WIFI_STA);
+
+  // Initialize ESP-NOW
+  if (esp_now_init() != ESP_OK) {        // Check if initialization was successful
+    Serial.println("Error initializing ESP-NOW");
+    return;                              // Exit if ESP-NOW failed to start
+  }
+
+  // Register the callback function to handle received data
+  esp_now_register_recv_cb(OnDataRecv);
+}
+
+void loop() {
+  // Main loop does nothing; ESP-NOW works with interrupt/callback system
+  // When data is received, OnDataRecv() will be triggered automatically
+}
