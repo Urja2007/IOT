@@ -1,30 +1,35 @@
-#include <DHT.h>
+#include <DHT.h> // Library for DHT sensor
 
-#define DHTPIN 2     
-#define DHTTYPE DHT11   
-DHT dht(DHTPIN, DHTTYPE);
+#define DHTPIN 2   // DHT sensor signal pin connected to Arduino digital pin 2  
+#define DHTTYPE DHT11   // We are using the DHT11 sensor
+DHT dht(DHTPIN, DHTTYPE);// Create DHT object
 
-int led=13;
+int led=13; // LED pin (optional for indication)
 int chk;
-float hum; 
-float temp; 
+float hum; // Variable to store humidity
+float temp; // Variable to store temperature
 
 void setup()
 {
-    Serial.begin(9600);
-	dht.begin();    
+  Serial.begin(9600);// Start Serial Monitor at 9600 baud rate
+	dht.begin();    // Initialize DHT sensor
 }
 
 void loop()
 {
-    hum = dht.readHumidity();
-    temp= dht.readTemperature();
-    Serial.print("Humidity: ");
-    Serial.print(hum);
-    Serial.print(" %, Temp: ");
-    Serial.print(temp);
-    Serial.println(" Celsius");
-    if (temp>2)
+  // Read humidity and temperature from DHT sensor
+  hum = dht.readHumidity();
+  temp= dht.readTemperature();
+
+  // Display data on Serial Monitor
+  Serial.print("Humidity: ");
+  Serial.print(hum);
+  Serial.print(" %, Temp: ");
+  Serial.print(temp);
+  Serial.println(" Celsius");
+
+  // Condition to check if temperature is high
+  if (temp>2)
     {
       Serial.print("");
       Serial.print(" HOT CLIMATE");
