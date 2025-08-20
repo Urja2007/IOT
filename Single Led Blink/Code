@@ -1,0 +1,23 @@
+/*
+ * GccApplication1.c
+ *
+ * Created: 04-08-2025 20:38:51
+ * Author : URJA
+ */ 
+
+#include <avr/io.h>
+#define F_CPU 8000000UL  /*8 MHz clock ul=unsigned long*/
+#include <util/delay.h>   /* _delay_ms()*/
+
+int main(void)
+{
+    DDRD = 0b11111111; /*data direction register...PD0 - PD7 8 pins declared as output pins*/
+    while (1) 
+    {
+		PORTD = 0b00000001; /*high set-5V will pass*/
+		_delay_ms(100);
+		PORTD = 0b00000000; /* low*/
+		_delay_ms(100);
+    }
+}
+
