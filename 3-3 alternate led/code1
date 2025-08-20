@@ -1,0 +1,49 @@
+/*
+ * GccApplication2.c
+ *
+ * Created: 06-08-2025 11:46:04
+ * Author : URJA
+ */ 
+
+#include <avr/io.h>
+#define F_CPU 8000000UL  /*8 MHz clock un = unsigned long*/
+#include <util/delay.h>   /* _delay_ms()*/
+
+int main(void)
+{
+	DDRD = 0b11111111; /*data direction register...PD0 - PD7 8 pins declared as output pins*/
+	while (1)
+	{
+		PORTD = 0b00000001; /*high set-5V will pass*/  //for PD0
+		_delay_ms(100);
+		PORTD = 0b00000000; /* low*/
+		_delay_ms(100);
+		
+		PORTD = 0b00000010;//for PD1
+		_delay_ms(100);
+		PORTD = 0b00000000;
+		_delay_ms(100);
+		
+		PORTD = 0b00000100;//for PD2
+		_delay_ms(100);
+		PORTD = 0b00000000;
+		_delay_ms(100);
+		
+		PORTD = 0b00001000;//for PD3
+		_delay_ms(100);
+		PORTD = 0b00000000;
+		_delay_ms(100);
+		
+		PORTD = 0b00010000;//for PD4
+		_delay_ms(100);
+		PORTD = 0b00000000;
+		_delay_ms(100);
+		
+		PORTD = 0b00100000;//for PD4
+		_delay_ms(100);
+		PORTD = 0b00000000;
+		_delay_ms(100);
+		
+	}
+}
+
