@@ -1,0 +1,19 @@
+#include <avr/io.h>
+#define F_CPU 8000000UL  /*8 MHz clock un = unsigned long*/
+#include <util/delay.h>   /* _delay_ms()*/
+
+int main(void)
+{
+	DDRD = 0b11111111; /*data direction register...PD0 - PD7 8 pins declared as output pins*/
+	while (1)
+	{
+		PORTD = 0b00000111; /*high set-5V will pass*/  //for PD0
+		_delay_ms(100);
+		PORTD = 0b00000000;
+		
+		PORTD = 0b00111000;//for PD3
+		_delay_ms(100);
+		PORTD = 0b00000000;
+		
+	}
+}
