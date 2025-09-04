@@ -1,0 +1,85 @@
+// =============================
+// BNO085 - Final Code with Comments
+// =============================
+
+#include <Wire.h>                 // Library for I2C communication
+#include "Adafruit_BNO08x.h"      // Adafruit library for BNO085 sensor
+
+// Create BNO085 object
+// The argument (-1) means we are not using the reset pin
+Adafruit_BNO08x bno08x(-1);  
+
+void setup() {
+  // Start serial communication for debugging at 115200 baud rate
+  Serial.begin(115200);
+
+  // Initialize I2C with custom pins on ESP32
+  // SDA = GPIO21, SCL = GPIO22
+  Wire.begin(21, 22);
+
+  // Start BNO085 in I2C mode
+  if (!bno08x.begin_I2C()) {
+    Serial.println("Failed to find BNO085 over I2C!");
+    while (1); // Stop program if sensor not found
+  }
+  Serial.println("BNO085 found over I2C");
+
+  // Enable "Rotation Vector" sensor report
+  // Rotation vector gives orientation in quaternion form
+  // 10000 = report interval in microseconds (10ms = 100 Hz)
+  if (!bno08x.enableReport(SH2_ROTATION_VECTOR, 10000)) {
+    Serial.println("Could not enable rotation vector");
+  }
+}
+
+void loop() {
+  // Struct to hold sensor event values
+  sh2_SensorValue_t sensorValue;
+
+  // Check if new sensor data is available
+  if (bno08x.getSensorEvent(&sensorValue)) {
+    
+    // If the event is a rotation vector (quaternion)
+    if (sensorValue.sensorId == SH2_ROTATION_VECTOR) {
+      
+      // Extract quaternion components
+      float qw = sensorValue.un.rotationVector.real;  // w (real part)
+      float qx = sensorValue.un.rotationVector.i;     // x
+      float qy = sensorValue.un.rotationVector.j;     // y
+      float qz = sensorValue.un.rotationVector.k;     // z
+
+      // Pre-calculate to optimize math
+      float ysqr = qy * qy;
+
+      // ========== Convert Quaternion to Euler Angles ==========
+      // Formula Source: Standard quaternion to Euler conversion
+
+      // Roll (rotation around X-axis)
+      float t0 = +2.0f * (qw * qx + qy * qz);
+      float t1 = +1.0f - 2.0f * (qx * qx + ysqr);
+      float roll = atan2(t0, t1);
+
+      // Pitch (rotation around Y-axis)
+      float t2 = +2.0f * (qw * qy - qz * qx);
+      // Clamp values to valid range for asin()
+      t2 = t2 > 1.0f ? 1.0f : t2;
+      t2 = t2 < -1.0f ? -1.0f : t2;
+      float pitch = asin(t2);
+
+      // Yaw (rotation around Z-axis)
+      float t3 = +2.0f * (qw * qz + qx * qy);
+      float t4 = +1.0f - 2.0f * (ysqr + qz * qz);
+      float yaw = atan2(t3, t4);
+
+      // Convert radians to degrees
+      roll  = roll * (180.0f / PI);
+      pitch = pitch * (180.0f / PI);
+      yaw   = yaw * (180.0f / PI);
+
+      // Print results to Serial Monitor
+      Serial.print("Yaw: ");   Serial.print(yaw);
+      Serial.print("  Pitch: "); Serial.print(pitch);
+      Serial.print("  Roll: ");  Serial.println(roll);
+    }
+  }
+}
